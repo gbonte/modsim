@@ -1,3 +1,3 @@
-# INFOF305 Modéistation et simulation
+# INFOF305 Modélisation et simulation
 
-# Files used during the theory class
+### Files used during the theory class
