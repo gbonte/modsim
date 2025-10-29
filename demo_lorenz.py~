@@ -1,0 +1,77 @@
+
+import numpy as np
+from scipy.integrate import solve_ivp
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+# clear all
+# (In Python, this is implicit when running a fresh script, but we can delete variables if needed)
+# close all
+plt.close('all')
+
+# global sigma=10
+# global r=28
+# global b=2.66
+sigma = 10
+r = 28
+b = 2.66
+
+tf = 500
+x0 = [-3.3178, -5.2182, 18.7739]
+
+# function dxdt = f(t,x)
+def f(t, x):
+    global sigma
+    global r
+    global b
+    
+    # dxdt = [-sigma*x(1)+sigma*x(2); -x(1)*x(3)+r*x(1)-x(2);x(1)*x(2)-b*x(3)];
+    dxdt = np.array([
+        -sigma*x[0] + sigma*x[1],
+        -x[0]*x[2] + r*x[0] - x[1],
+        x[0]*x[1] - b*x[2]
+    ])
+    
+    return dxdt
+# endfunction
+
+# [t,x,te,ye,ie] = ode23(@f,[0 tf],x0);
+# Using solve_ivp with 'RK23' method (equivalent to MATLAB's ode23)
+sol = solve_ivp(f, [0, tf], x0, method='RK23', dense_output=True)
+t = sol.t
+x = sol.y.T  # Transpose to get shape (n_points, 3) to match MATLAB's column-wise state variables
+te = []  # Event times (empty, as no events defined)
+ye = []  # Event states (empty, as no events defined)
+ie = []  # Event indices (empty, as no events defined)
+
+# #for (j=1:3)
+# #    figure(j+1)
+# #    plot(t,x(:,j))
+# #    xlabel('time')
+# #    ylabel(['x_', num2str(j)])
+# #end
+#for j in range(1, 4):
+#    plt.figure(j+1)
+#    plt.plot(t, x[:, j-1])
+#    plt.xlabel('time')
+#    plt.ylabel(f'x_{j}')
+
+# for (i=1:20:size(x,1))
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+for i in range(1, x.shape[0]+1, 20):
+    # plot3(x(1:i,1),x(1:i,2),x(1:i,3))
+    ax.clear()
+    ax.plot3D(x[0:i, 0], x[0:i, 1], x[0:i, 2])
+    # #set(1,'Position',[63   140   980   756])
+    # view(30,30)
+    ax.view_init(elev=30, azim=30)
+    # drawnow
+    plt.pause(0.001)
+    plt.draw()
+# end
+
+plt.show()
+
+

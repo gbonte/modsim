@@ -47,13 +47,13 @@ if (a > 4):
 f = plt.figure(1)
 manager=plt.currentmanager = plt.get_current_fig_manager()
 manager.window.wm_geometry("+900+50")  # X=400 pixels from left, Y=200 pixels from top
-manager.resize(800, 550)
+manager.resize(800, 400)
 
 
 pl = plt.plot(X, logi(X, a))
 plt.setp(pl, linewidth=2)
 plt.gca().tick_params(labelsize=28)
-plt.hold = True  # This is implicit in newer matplotlib versions
+plt.hold = True  
 pl2 = plt.plot(X, X, 'r')
 plt.setp(pl2, linewidth=2)
 
@@ -65,7 +65,7 @@ xx = x - 0.005
 xk = []
 xxk = []
 
-for i in range(1, 501):  # MATLAB's 1:500 translates to range(1, 501)
+for i in range(1, 501):  
     plt.gca().tick_params(labelsize=28)
     
    
@@ -102,8 +102,8 @@ for i in range(1, 501):  # MATLAB's 1:500 translates to range(1, 501)
     # Set position for figure 2
 
     manager=plt.currentmanager = plt.get_current_fig_manager()
-    manager.window.wm_geometry("+900+700")  # X=400 pixels from left, Y=200 pixels from top
-    manager.resize(800, 550)    
+    manager.window.wm_geometry("+900+600")  # X=400 pixels from left, Y=200 pixels from top
+    manager.resize(800, 450)    
     plt.clf()  # Clear figure to redraw
     pl3 = plt.plot(xk)
 
@@ -118,14 +118,10 @@ for i in range(1, 501):  # MATLAB's 1:500 translates to range(1, 501)
     
     if i > 2 and a > 3.6:
         f3 = plt.figure(3)
-        # Set position for figure 3
-        f3.set_size_inches(pf3[2]/dpi, pf3[3]/dpi)
-        try:
-            f3.canvas.manager.window.wm_geometry("+%d+%d" % (pf3[0], pf3[1]))
-        except:
-            pass  # Some backends may not support positioning
-        
-        # hold on is implicit - no need to clear
+        manager=plt.currentmanager = plt.get_current_fig_manager()
+        manager.window.wm_geometry("+200+50")  # X=400 pixels from left, Y=200 pixels from top             
+        manager.resize(600, 400)
+
         pl4 = plt.plot(xk[len(xk)-2], xk[len(xk)-1], '*')
         plt.setp(pl4, markersize=12)
         plt.xlabel('x(k-1)', fontsize=fsize)
@@ -134,7 +130,7 @@ for i in range(1, 501):  # MATLAB's 1:500 translates to range(1, 501)
     
     plt.pause(0.001)  # Small pause to update figures
     # Wait for user input to continue
-        # Pause here until the button is clicked
+
     root.mainloop()
     
 

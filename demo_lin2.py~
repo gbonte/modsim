@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
-import matplotlib
-matplotlib.use('TkAgg')  # Switch backend
-
+# clear all
+# close all
 plt.close('all')
 
 # -2,1
@@ -43,21 +42,13 @@ def f2(t, x):
     dxdt = A @ x
     return dxdt
 
-# get(figure(1),"Position")
-fig = plt.figure(1)
-
-manager=plt.currentmanager = plt.get_current_fig_manager()
-manager.window.wm_geometry("+900+100")  # X=400 pixels from left, Y=200 pixels from top
-manager.resize(900, 600)
-
-
 D = np.diag([lam1, lam2])
 
 # matrix with eigenvectors V and eigenvalues D
 # eig(A) check on eigenvalues
 A = V @ D @ np.linalg.inv(V)
 
-tf = 10.0
+tf = 10
 T = np.arange(0, tf + 0.01, 0.01)
 
 # Solve ODE for x0A
@@ -100,30 +91,33 @@ N = x.shape[0]
 
 xx = np.arange(-10, 11, 1)
 
-
-
+# get(figure(1),"Position")
+fig = plt.figure(1)
+pos = [468, 124, 1430, 897]
+# Convert position to inches for matplotlib (assuming 100 DPI)
+dpi = 100
+fig.set_size_inches(pos[2]/dpi, pos[3]/dpi)
 
 plt.plot(xx, V[1, 0]/V[0, 0]*xx)
-plt.hold = True  #
+plt.hold = True  # Not needed in modern matplotlib, plot adds to existing axes
 plt.plot(xx, V[1, 1]/V[0, 1]*xx)
-
-mksize=7
+fig.set_size_inches(pos[2]/dpi, pos[3]/dpi)
 
 for i in range(0, N, 5):
-
+    fig.set_size_inches(pos[2]/dpi, pos[3]/dpi)
     I = i
     
     if lam1 > 0:
-        plt.plot(xA[I, 0], xA[I, 1], 'r*', linewidth=4, markersize=mksize)
+        plt.plot(xA[I, 0], xA[I, 1], 'r*', linewidth=4, markersize=10)
     else:
-        plt.plot(xA[I, 0], xA[I, 1], 'g*', linewidth=4, markersize=mksize)
+        plt.plot(xA[I, 0], xA[I, 1], 'g*', linewidth=4, markersize=10)
     
     if lam2 > 0:
-        plt.plot(xB[I, 0], xB[I, 1], 'r*', linewidth=4, markersize=mksize)
+        plt.plot(xB[I, 0], xB[I, 1], 'r*', linewidth=4, markersize=10)
     else:
-        plt.plot(xB[I, 0], xB[I, 1], 'g*', linewidth=4, markersize=mksize)
+        plt.plot(xB[I, 0], xB[I, 1], 'g*', linewidth=4, markersize=10)
     
-    plt.plot(x[I, 0], x[I, 1], 'k*', linewidth=3, markersize=mksize)
+    plt.plot(x[I, 0], x[I, 1], 'k*', linewidth=3, markersize=10)
     
     # Format the title
     title_str = (f't={t[i]:.3g};   x=[{x[i, 0]:.3g} {x[i, 1]:.3g}]=   '
@@ -148,6 +142,7 @@ for i in range(0, N, 5):
     # set(figure(1),"Position",pos);
     xt = ax.get_xticks()
     
-    plt.pause(0.15)
- 
+    plt.pause(0.1)
+    # Uncomment the line below if you want to pause for user input at each iteration
+    # input("Press Enter to continue...")
 

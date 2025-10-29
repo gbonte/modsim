@@ -20,25 +20,15 @@ plt.close('all')
 
 # Global variables
 phi = 1
-
-
-## system parameters
+u = 10
+animation = 1
 m = 1
 g = 9.8
 l = 1
 k = 0
 omega2 = g / l
-
-
-## simulation parameters
-theta0=-1
-thetap0=0
 tf = 8
-
-
-animation=1
-speed=0.005 ## animation speed
-
+speed=0.01 ## animation speed
 
 def f2(t, y):
     """
@@ -113,15 +103,17 @@ def pendule(theta, time, fig_num, title_str, fontsize):
     plt.pause(0.01)
 
 
-
+# Figure position coordinates
+coordf = [1, 76, 854, 1276]
+coordf = [28, 152, 854, 715]
 
 fontsize = 20
 
 
 # Main loop through different values of u
 for u in [1, 2, 3, 3.5, 4, 5, 6]:
-    theta = theta0
-    thetap = thetap0
+    theta = 1
+    thetap = 0
     
     # thetap = sqrt(2*omega2*(1+cos(theta)))
     x0 = [theta, thetap]
@@ -160,9 +152,9 @@ for u in [1, 2, 3, 3.5, 4, 5, 6]:
                 pass
         
         # Animate the pendulum
-        for j in range(0, len(t), max(1, len(t)*speed)):
+        for j in range(0, len(t), max(1, round(len(t)*speed/1000))):
             pendule(ynl[j, 0], t[j], 1, f'HOOP  u={u}', fontsize)
-            plt.pause(0.05)
+            
             # Set figure position again (in case it was changed)
             try:
                 mngr = plt.get_current_fig_manager()
