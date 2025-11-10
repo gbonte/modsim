@@ -93,22 +93,12 @@ xp = y
 yp = -g/l*(x)-k/m*y
 yp2 = -g/l*np.sin(x)-k/m*y
 
-coordf1 = [10, 743, 859, 601]
-coordf2 = [10, 75, 862, 574]
-coordf3 = [889, 740, 683, 599]
-coordf4 = [889, 85, 683, 599]
 
-coordf1 = [1, 568, 648, 422]
-coordf2 = [1, 68, 648, 392]
-coordf3 = [657, 566, 591, 422]
-coordf4 = [657, 68, 591, 392]
 
 # Create figures
 fig1 = plt.figure(1)
-# Convert MATLAB position [left, bottom, width, height] to inches (approximate)
-# MATLAB uses pixels, matplotlib uses inches
-dpi = 100
-fig1.set_size_inches(coordf1[2]/dpi, coordf1[3]/dpi)
+
+
 manager=plt.currentmanager = plt.get_current_fig_manager()
 manager.window.wm_geometry("+900+50")  # X=400 pixels from left, Y=200 pixels from top
 manager.resize(600, 450)
@@ -116,7 +106,7 @@ manager.resize(600, 450)
 
 
 fig2 = plt.figure(2)
-fig2.set_size_inches(coordf2[2]/dpi, coordf2[3]/dpi)
+
 manager=plt.currentmanager = plt.get_current_fig_manager()
 manager.window.wm_geometry("+900+800")  # X=400 pixels from left, Y=200 pixels from top
 manager.resize(600, 450)
@@ -124,13 +114,12 @@ manager.resize(600, 450)
 
 
 fig3 = plt.figure(3)
-fig3.set_size_inches(coordf3[2]/dpi, coordf3[3]/dpi)
 manager=plt.currentmanager = plt.get_current_fig_manager()
 manager.window.wm_geometry("+200+50")  # X=400 pixels from left, Y=200 pixels from top
 manager.resize(600, 450)
 
 fig4 = plt.figure(4)
-fig4.set_size_inches(coordf4[2]/dpi, coordf4[3]/dpi)
+
 manager=plt.currentmanager = plt.get_current_fig_manager()
 manager.window.wm_geometry("+200+800")  # X=400 pixels from left, Y=200 pixels from top
 manager.resize(600, 450)

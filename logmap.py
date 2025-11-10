@@ -116,7 +116,7 @@ for i in range(1, 501):
     plt.plot(xxk, 'r-')
     plt.setp(pl3, linewidth=3)
     
-    if i > 2 and a > 3.6:
+    if i > 2 and a > 3:
         f3 = plt.figure(3)
         manager=plt.currentmanager = plt.get_current_fig_manager()
         manager.window.wm_geometry("+200+50")  # X=400 pixels from left, Y=200 pixels from top             
