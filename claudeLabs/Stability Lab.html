@@ -1,0 +1,600 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Stability Lab (INFOF305)</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a lab bench — controls in a left rail, the phase plane as the specimen in the centre, the distance evidence stacked on the right. */
+:root{
+  --bg:#f3f4f2; --panel:#ffffff; --plot:#fcfcfb; --grid:#e6e6e1; --axis:#c3c2b7;
+  --ink:#141619; --muted:#5d6066; --faint:#898781; --line:#dcdcd5;
+  --accent:#2a78d6; --accent-ink:#ffffff;
+  --pert:#eb6834; --nominal:#141619; --eps:#15803d;
+  --good:#0a7d0a; --bad:#c43333; --warn:#9a6a00;
+  --d1:#184f95; --d2:#1c5cab; --d3:#256abf; --d4:#2a78d6; --d5:#3987e5; --d6:#5598e7; --d7:#6da7ec; --d8:#86b6ef;
+  --f-display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1012; --panel:#17181b; --plot:#1a1a19; --grid:#2c2c2a; --axis:#45453f;
+  --ink:#f0efec; --muted:#b4b3ab; --faint:#898781; --line:#2e2f33;
+  --accent:#3987e5; --accent-ink:#0f1012;
+  --pert:#ef7a4a; --nominal:#f0efec; --eps:#4ade80;
+  --good:#3cc23c; --bad:#ef6a6a; --warn:#e3aa2c;
+  --d1:#cde2fb; --d2:#b7d3f6; --d3:#9ec5f4; --d4:#86b6ef; --d5:#6da7ec; --d6:#5598e7; --d7:#3987e5; --d8:#2a78d6;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1012; --panel:#17181b; --plot:#1a1a19; --grid:#2c2c2a; --axis:#45453f;
+  --ink:#f0efec; --muted:#b4b3ab; --faint:#898781; --line:#2e2f33;
+  --accent:#3987e5; --accent-ink:#0f1012;
+  --pert:#ef7a4a; --nominal:#f0efec; --eps:#4ade80;
+  --good:#3cc23c; --bad:#ef6a6a; --warn:#e3aa2c;
+  --d1:#cde2fb; --d2:#b7d3f6; --d3:#9ec5f4; --d4:#86b6ef; --d5:#6da7ec; --d6:#5598e7; --d7:#3987e5; --d8:#2a78d6;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.wrap{max-width:1440px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-direction:column;gap:6px}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(26px,3.6vw,36px);line-height:1.1;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:0;max-width:90ch}
+.defn{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:12px}
+.defn div{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;min-width:0}
+.defn b{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px}
+.math{font-family:var(--f-display);font-size:16.5px}
+.math i{font-style:italic}
+.app{display:grid;gap:16px;grid-template-columns:290px minmax(0,1.15fr) minmax(0,1fr);align-items:start}
+@media (max-width:1180px){ .app{grid-template-columns:270px minmax(0,1fr)} .right{grid-column:1 / -1} }
+@media (max-width:760px){ .app{grid-template-columns:minmax(0,1fr)} }
+.controls{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.group{display:flex;flex-direction:column;gap:8px}
+.group + .group{border-top:1px solid var(--line);padding-top:12px}
+.lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+select,input[type=number]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 8px;width:100%;min-width:0}
+input[type=range]{width:100%;accent-color:var(--accent);min-width:0}
+.slider{display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--muted)}
+.slider .top{display:flex;justify-content:space-between;gap:8px}
+.slider output{font-family:var(--f-mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.mat[hidden]{display:none}
+.mat{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:7px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card h2{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0;line-height:1.2}
+.card .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--muted)}
+.plot{position:relative;width:100%;aspect-ratio:1/1;max-height:74vh;background:var(--plot);border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:crosshair;touch-action:none}
+.plot canvas,.cv canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cv{position:relative;width:100%;height:270px}
+.cv.small{height:210px}
+.readout{position:absolute;left:8px;bottom:6px;font-family:var(--f-mono);font-size:11.5px;color:var(--muted);background:color-mix(in srgb,var(--plot) 85%,transparent);padding:2px 7px;border-radius:5px;pointer-events:none;font-variant-numeric:tabular-nums}
+.zoom{position:absolute;right:8px;bottom:6px;display:flex;gap:4px}
+.zoom button{width:30px;height:30px;padding:0;font-size:16px;line-height:1;background:var(--panel)}
+.plot.dragging{cursor:grabbing}
+.tbadge{position:absolute;right:8px;top:6px;font-family:var(--f-mono);font-size:12px;color:var(--ink);background:color-mix(in srgb,var(--plot) 85%,transparent);padding:2px 8px;border-radius:5px;pointer-events:none}
+.timebar{display:flex;align-items:center;gap:8px}
+.timebar input{flex:1}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:18px;height:0;border-top:2px solid currentColor}
+.sw.dash{border-top-style:dashed}
+.band{display:inline-block;width:20px;height:10px;border-radius:5px;background:color-mix(in srgb,currentColor 22%,transparent);border:2px solid currentColor}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:currentColor}
+.verdict{display:flex;gap:10px;align-items:flex-start;border-radius:8px;padding:10px 12px;border:1px solid var(--line);background:var(--bg)}
+.verdict .chip{flex:none;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;border:1.5px solid currentColor;white-space:nowrap}
+.chip.good{color:var(--good)} .chip.bad{color:var(--bad)} .chip.warn{color:var(--warn)}
+.verdict p{margin:0;font-size:13.5px}
+.right{display:flex;flex-direction:column;gap:16px;min-width:0}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:4px 6px;border-bottom:1px solid var(--line);font-family:var(--f-mono);white-space:nowrap;text-align:right}
+td .sq{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
+td.out{color:var(--bad);font-weight:500} td.in{color:var(--good)}
+.refs{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.refs h2{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0}
+.refs ol{margin:0;padding-left:20px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:3px;max-width:110ch}
+.refs a{color:var(--accent)}
+.refs i{color:var(--ink)}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;font-family:var(--f-mono);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.12);white-space:nowrap;z-index:2}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1> INFOF305 Stability Lab</h1>
+    <h2> Designed by Claude</h2>
+    <p class="sub">A nominal trajectory x̄(t) starts at x̄₀. Perturbed trajectories start on a circle of radius δ around it. Stability asks whether staying close at the start guarantees staying close forever. Click the phase plane to move x̄₀.</p>
+  </header>
+
+  <section class="defn" aria-label="Definitions">
+    <div><b>Stable (Lyapunov)</b><span class="math">∀ <i>ε</i> &gt; 0 ∃ <i>δ</i> &gt; 0 : ‖<i>x</i>(0) − <i>x̄</i>(0)‖ &lt; <i>δ</i> ⇒ ‖<i>x</i>(<i>t</i>) − <i>x̄</i>(<i>t</i>)‖ &lt; <i>ε</i> for all <i>t</i> ≥ 0</span></div>
+    <div><b>Unstable</b><span class="math">∃ <i>ε</i> &gt; 0 ∀ <i>δ</i> &gt; 0 ∃ <i>x</i>(0), ‖<i>x</i>(0) − <i>x̄</i>(0)‖ &lt; <i>δ</i>, ∃ <i>t</i> : ‖<i>x</i>(<i>t</i>) − <i>x̄</i>(<i>t</i>)‖ ≥ <i>ε</i></span></div>
+  </section>
+
+  <main class="app">
+    <aside class="controls">
+      <div class="group">
+        <label class="lbl" for="preset">System</label>
+        <select id="preset"></select>
+        <p class="note" id="sysEq"></p>
+        <div class="mat" id="matBox" hidden>
+          <div class="slider"><div class="top"><label for="m11">a₁₁</label><output id="o11"></output></div><input type="range" id="m11" min="-2" max="2" step="0.05"></div>
+          <div class="slider"><div class="top"><label for="m12">a₁₂</label><output id="o12"></output></div><input type="range" id="m12" min="-3" max="3" step="0.05"></div>
+          <div class="slider"><div class="top"><label for="m21">a₂₁</label><output id="o21"></output></div><input type="range" id="m21" min="-3" max="3" step="0.05"></div>
+          <div class="slider"><div class="top"><label for="m22">a₂₂</label><output id="o22"></output></div><input type="range" id="m22" min="-2" max="2" step="0.05"></div>
+        </div>
+      </div>
+      <div class="group">
+        <span class="lbl">The ε–δ test</span>
+        <div class="slider"><div class="top"><label for="sEps">Tube radius ε</label><output id="oEps"></output></div><input type="range" id="sEps" min="-2" max="0.3" step="0.05" value="-0.3"></div>
+        <div class="slider"><div class="top"><label for="sDel">Perturbation δ (0 &lt; δ &lt; ε)</label><output id="oDel"></output></div><input type="range" id="sDel" min="0.001" max="0.999" step="0.001" value="0.5"></div>
+        <p class="note">Perturbations are always smaller than ε: the charts test δ = ε/10 … ε/10⁸, so every perturbed trajectory starts inside the ε-tube. Each δ is tried in 8 directions; the distance shown is the worst of the 8.</p>
+      </div>
+      <div class="group">
+        <span class="lbl">Simulation</span>
+        <div class="slider"><div class="top"><label for="sT">Horizon T</label><output id="oT"></output></div><input type="range" id="sT" min="5" max="120" step="1" value="30"></div>
+        <div class="slider"><div class="top"><label for="sSp">Playback speed</label><output id="oSp"></output></div><input type="range" id="sSp" min="0.05" max="1" step="0.01" value="0.1"></div>
+        <div class="btns"><button id="bPlay" class="primary">Pause</button><button id="bReset">Reset x̄₀</button></div>
+      </div>
+      <div class="group">
+        <span class="lbl">Linearization at x̄₀</span>
+        <p class="note" id="jac"></p>
+      </div>
+    </aside>
+
+    <section class="stage">
+      <div class="card">
+        <div class="head"><h2>Phase plane</h2><span class="hint">Click: place x̄₀ · drag: move · scroll or ±: zoom · arrow keys also move</span></div>
+        <div class="plot" id="plot">
+          <canvas id="cPlane"></canvas>
+          <div class="tbadge" id="tbadge">t = 0.00</div>
+          <div class="readout" id="readout">x = —, y = —</div>
+          <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zreset" aria-label="Reset view" title="Reset view">↺</button></div>
+        </div>
+        <div class="timebar"><label class="hint" for="sTime">t</label><input type="range" id="sTime" min="0" max="1000" step="1" value="0" aria-label="Time"></div>
+        <div class="legend">
+          <span style="color:var(--nominal)"><i class="sw"></i>nominal x̄(t)</span>
+          <span style="color:var(--pert)"><i class="sw"></i>perturbed, ‖x(0) − x̄₀‖ = δ</span>
+          
+          <span style="color:var(--eps)"><i class="band"></i>ε-tube: all points within ε of x̄(t)</span>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"><span class="chip" id="vchip">…</span><p id="vtext"></p></div>
+    </section>
+
+    <section class="right">
+      <div class="card">
+        <div class="head"><h2>Distance ‖x(t) − x̄(t)‖</h2><span class="hint">log scale · worst of 8 directions</span></div>
+        <div class="cv" id="cvDist"><canvas id="cDist"></canvas></div>
+        <div class="legend" id="dLegend"></div>
+      </div>
+      <div class="card">
+        <div class="head"><h2>Exit time from the ε-tube</h2><span class="hint">first t with distance ≥ ε</span></div>
+        <div class="cv small" id="cvExit"><canvas id="cExit"></canvas></div>
+        <p class="note" id="exitNote"></p>
+      </div>
+      <div class="card">
+        <div class="head"><h2>By perturbation size</h2><span class="hint">over 0 ≤ t ≤ T</span></div>
+        <div class="tablewrap"><table><thead><tr><th>δ</th><th>max distance</th><th>max ratio dist/δ</th><th>dist(T)</th><th>exit time</th></tr></thead><tbody id="tbody"></tbody></table></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="refs">
+    <h2>References</h2>
+    <ol>
+      <li>A. M. Lyapunov, <i>The General Problem of the Stability of Motion</i> (1892); English translation, Taylor &amp; Francis, 1992.</li>
+      <li>H. K. Khalil, <i>Nonlinear Systems</i>, 3rd ed., Prentice Hall, 2002. Ch. 4: Lyapunov stability, definitions 4.1 and the indirect method.</li>
+      <li>S. H. Strogatz, <i>Nonlinear Dynamics and Chaos</i>, 2nd ed., CRC Press, 2015. §5.2–6.3: linear systems, fixed points and linearization; §7: limit cycles.</li>
+      <li>M. W. Hirsch, S. Smale, R. L. Devaney, <i>Differential Equations, Dynamical Systems, and an Introduction to Chaos</i>, 3rd ed., Academic Press, 2013. Ch. 8–9: stability, the pendulum, orbital vs Lyapunov stability.</li>
+      <li>J. Guckenheimer, P. Holmes, <i>Nonlinear Oscillations, Dynamical Systems, and Bifurcations of Vector Fields</i>, Springer, 1983. Asymptotic phase of stable limit cycles.</li>
+      <li>Web: <a href="https://en.wikipedia.org/wiki/Lyapunov_stability" target="_blank" rel="noopener">Lyapunov stability</a> · <a href="https://en.wikipedia.org/wiki/Lyapunov_exponent" target="_blank" rel="noopener">Lyapunov exponent</a> · <a href="https://www.scholarpedia.org/article/Stability_of_equilibria" target="_blank" rel="noopener">Scholarpedia: Stability of equilibria</a></li>
+    </ol>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+let DELTAS=[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7,1e-8];
+// perturbation sizes are tied to the tube radius, so every perturbed start lies inside the eps-tube: delta = eps/10 ... eps/10^8
+function setDeltas(){DELTAS=[1,2,3,4,5,6,7,8].map(k=>S.eps*Math.pow(10,-k));}
+const NDIR=8, NRING=24;
+
+const PRESETS=[
+  {id:'damped',name:'Damped oscillator: asymptotically stable',eq:'x′ = y,  y′ = −x − 0.4y',f:(x,y)=>[y,-x-0.4*y],x0:[2,0],T:30,view:[-3,3,-3,3],
+   note:'Every nearby trajectory spirals into the same equilibrium, so the distance to the nominal one shrinks to zero.'},
+  {id:'center',name:'Harmonic oscillator: stable, not asymptotically',eq:'x′ = y,  y′ = −x',f:(x,y)=>[y,-x],x0:[2,0],T:30,view:[-3,3,-3,3],
+   note:'All orbits are circles with the same period, so the δ-circle just rotates: the distance stays exactly δ, never shrinking, never growing.'},
+  {id:'saddle',name:'Saddle: unstable',eq:'x′ = x,  y′ = −y',f:(x,y)=>[x,-y],x0:[0,2],T:20,view:[-3,3,-3,3],
+   note:'The nominal trajectory runs down the stable manifold into the saddle. Any perturbation with an x-component grows like δ·eᵗ.'},
+  {id:'ufocus',name:'Unstable focus: unstable',eq:'x′ = 0.5x − 2y,  y′ = 2x + 0.5y',f:(x,y)=>[0.5*x-2*y,2*x+0.5*y],x0:[0,0],T:40,view:[-3,3,-3,3],
+   note:'The nominal trajectory is the equilibrium itself. Perturbations spiral out at rate e^(0.5t), without bound.'},
+  {id:'inverted',name:'Inverted pendulum: unstable',eq:'θ′ = ω,  ω′ = sin θ − 0.2ω   (θ = 0 is upright)',f:(x,y)=>[y,Math.sin(x)-0.2*y],x0:[0,0],T:30,view:[-4.5,4.5,-3,3],
+   note:'Nominal: balanced upright. Any nudge makes it fall. The distance grows like e^(0.9t) at first, then saturates near π when the pendulum hangs down. It is bounded, but still larger than any ε < π.'},
+  {id:'pendulum',name:'Undamped pendulum, large swing: unstable (slowly)',eq:'θ′ = ω,  ω′ = −sin θ',f:(x,y)=>[y,-Math.sin(x)],x0:[2.2,0],T:80,view:[-3.5,3.5,-2.6,2.6],
+   note:'Every orbit is a closed curve, so it looks stable. But the period grows with amplitude: a perturbed swing slowly drifts out of phase, and the distance grows linearly in t until it reaches the orbit diameter. Orbitally stable, yet unstable in Lyapunov’s sense.'},
+  {id:'vdp',name:'Van der Pol limit cycle: stable, not asymptotically',eq:'x′ = y,  y′ = (1 − x²)y − x',f:(x,y)=>[y,(1-x*x)*y-x],x0:[2.00862,0],T:40,view:[-3,3,-3.5,3.5],
+   note:'The nominal trajectory runs on the limit cycle. Perturbations return to the cycle but keep a small phase shift, so the distance stays proportional to δ: bounded, but not shrinking to zero.'},
+  {id:'linear',name:'Linear system x′ = Ax (edit A)',eq:'',f:null,x0:[0,0],T:30,view:[-3,3,-3,3],
+   note:'Stability of x′ = Ax depends only on the eigenvalues of A: stable if all real parts are ≤ 0 (and those on the axis are simple), asymptotically stable if all are < 0.'}
+];
+const A={a:-0.3,b:-1,c:1.5,d:-0.2};
+
+const S={p:PRESETS[0],x0:[2,0],eps:Math.pow(10,-0.3),dIdx:-1,frac:0.5,T:30,dt:0.01,speed:1,playing:true,t:0,
+  nom:null,ring:null,dist:null,tS:null,stride:1,exitT:[],verdict:null};
+
+/* ---------- integration ---------- */
+function F(x,y){
+  if(S.p.id==='linear') return [A.a*x+A.b*y, A.c*x+A.d*y];
+  return S.p.f(x,y);
+}
+function rk4(x,y,h){
+  const k1=F(x,y),k2=F(x+.5*h*k1[0],y+.5*h*k1[1]),k3=F(x+.5*h*k2[0],y+.5*h*k2[1]),k4=F(x+h*k3[0],y+h*k3[1]);
+  return [x+h/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]), y+h/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1])];
+}
+const BIG=1e12;
+function simulate(){
+  const n=Math.ceil(S.T/S.dt), stride=Math.max(1,Math.ceil(n/900)), ns=Math.floor(n/stride)+1;
+  S.stride=stride;
+  const tS=new Float64Array(ns), nx=new Float64Array(ns), ny=new Float64Array(ns);
+  // state arrays
+  const traj=[]; // [x,y,kind,deltaIdx]
+  traj.push([S.x0[0],S.x0[1]]);
+  for(let di=0;di<DELTAS.length;di++) for(let k=0;k<NDIR;k++){
+    const a=2*Math.PI*(k+0.5)/NDIR; traj.push([S.x0[0]+DELTAS[di]*Math.cos(a), S.x0[1]+DELTAS[di]*Math.sin(a)]);
+  }
+  const dShow=S.eps*S.frac;
+  const ringStart=traj.length;
+  for(let k=0;k<NRING;k++){const a=2*Math.PI*k/NRING; traj.push([S.x0[0]+dShow*Math.cos(a), S.x0[1]+dShow*Math.sin(a)]);}
+  const ringX=Array.from({length:NRING},()=>new Float64Array(ns)), ringY=Array.from({length:NRING},()=>new Float64Array(ns));
+  const dist=Array.from({length:DELTAS.length},()=>new Float64Array(ns));
+  const alive=new Uint8Array(traj.length).fill(1);
+  let si=0;
+  const record=()=>{
+    tS[si]=si*stride*S.dt; nx[si]=traj[0][0]; ny[si]=traj[0][1];
+    for(let di=0;di<DELTAS.length;di++){
+      let m=0;
+      for(let k=0;k<NDIR;k++){const j=1+di*NDIR+k; const dd=alive[j]?Math.hypot(traj[j][0]-traj[0][0],traj[j][1]-traj[0][1]):BIG; if(!(dd<BIG))m=BIG; else if(dd>m)m=dd;}
+      dist[di][si]=m;
+    }
+    for(let k=0;k<NRING;k++){const j=ringStart+k; ringX[k][si]=alive[j]?traj[j][0]:NaN; ringY[k][si]=alive[j]?traj[j][1]:NaN;}
+    si++;
+  };
+  record();
+  for(let s=1;s<=n;s++){
+    for(let j=0;j<traj.length;j++){
+      if(!alive[j])continue;
+      const o=rk4(traj[j][0],traj[j][1],S.dt);
+      if(!isFinite(o[0])||!isFinite(o[1])||Math.abs(o[0])>BIG||Math.abs(o[1])>BIG){alive[j]=0;continue;}
+      traj[j][0]=o[0];traj[j][1]=o[1];
+    }
+    if(s%stride===0&&si<ns)record();
+  }
+  S.tS=tS.subarray(0,si); S.nom={x:nx.subarray(0,si),y:ny.subarray(0,si)};
+  S.dist=dist.map(a=>a.subarray(0,si)); S.ring={x:ringX.map(a=>a.subarray(0,si)),y:ringY.map(a=>a.subarray(0,si))};
+  // distance for the user-chosen delta: worst of the ring directions
+  S.rdist=new Float64Array(si);
+  for(let i=0;i<si;i++){let m=0;for(let k=0;k<NRING;k++){const x=ringX[k][i];if(!isFinite(x)){m=BIG;break;}const dd=Math.hypot(x-nx[i],ringY[k][i]-ny[i]);if(dd>m)m=dd;}S.rdist[i]=m;}
+  analyse();
+}
+
+/* ---------- analysis ---------- */
+function maxIn(arr,t0,t1){let m=0;for(let i=0;i<arr.length;i++){const t=S.tS[i];if(t>=t0&&t<=t1&&arr[i]>m)m=arr[i];}return m;}
+function analyse(){
+  const eps=S.eps, T=S.T;
+  S.exitT=S.dist.map(d=>{for(let i=0;i<d.length;i++) if(d[i]>=eps) return S.tS[i]; return null;});
+  S.rows=S.dist.map((d,i)=>{let m=0;for(const v of d) if(v>m)m=v; return {delta:DELTAS[i],max:m,ratio:m/DELTAS[i],end:d[d.length-1],exit:S.exitT[i]};});
+  const k=DELTAS.length-1, dmin=DELTAS[k], d=S.dist[k];
+  let v;
+  if(S.exitT[k]!==null){
+    const te=S.exitT[k], lam=Math.log(eps/dmin)/Math.max(te,1e-9);
+    v={cls:'bad',chip:'Unstable',kind:'exp',lam,
+       text:`Even the smallest perturbation, δ = ε/10⁸ = ${sci(dmin)}, starts deep inside the ε-tube and still leaves it (ε = ${fmt(eps)}) at t = ${te.toFixed(2)}. Shrinking δ by 10× only delays the exit by about ln(10)/λ ≈ ${(Math.log(10)/lam).toFixed(2)} time units: no δ keeps the distance below ε.`};
+  } else {
+    const r1=maxIn(d,T/4,T/2)/dmin, r2=maxIn(d,T/2,T)/dmin, g=r2/Math.max(r1,1e-300);
+    if(g>4){
+      const lam=Math.log(g)/(T/2); const te=(Math.log(eps/dmin))/lam;
+      v={cls:'bad',chip:'Unstable',kind:'exp',lam,text:`The distance grows exponentially (rate λ ≈ ${lam.toFixed(3)}). δ = ε/10⁸ has not left the tube by T = ${T}, but at this rate it would at t ≈ ${te.toFixed(1)}. Increase the horizon T to see it.`};
+    } else if(g>1.3){
+      const p=Math.log2(g), R=r2; const te=T*Math.pow(eps/(dmin*R),1/p);
+      v={cls:'bad',chip:'Unstable',kind:'poly',p,text:`The distance grows like t^${p.toFixed(1)}, not exponentially, but it still grows without a δ-dependent bound. Extrapolating, δ = ε/10⁸ would leave the ε-tube at t ≈ ${sci(te)}; larger δ already leave within T (table). Every δ eventually exits: unstable.`};
+    } else if(g<0.6||r2<0.01){
+      const C=Math.max(...S.rows.slice(1).map(r=>r.ratio)), end=d[d.length-1]/dmin;
+      v={cls:'good',chip:'Asymptotically stable',kind:'asym',text:`The distance stays below ${fmt(C)}·δ and decays to zero: at T it is ${(end*100).toPrecision(2)}% of δ. So δ = ${C>1.05?'ε / '+fmt(C):'ε'} keeps every perturbed trajectory inside the ε-tube, and the tube can even shrink over time.`};
+    } else {
+      const C=Math.max(...S.rows.slice(1).map(r=>r.ratio));
+      v={cls:'good',chip:'Stable, not asymptotically',kind:'stable',text:`The distance stays proportional to δ (at most ${fmt(C)}·δ), neither growing nor decaying. So δ = ${C>1.05?'ε / '+fmt(C):'ε'} keeps every perturbed trajectory inside the ε-tube for all t ≤ T.`};
+    }
+  }
+  const outside=S.rows.filter(r=>r.exit!==null&&r.delta<eps).length;
+  if((v.kind==='asym'||v.kind==='stable')&&outside>0) v.text+=` Large perturbations (${outside} of the 8 sizes) do exit: stability is a local property.`;
+  S.verdict=v;
+}
+
+/* ---------- formatting ---------- */
+function fmt(v){if(!isFinite(v))return '∞';if(v===0)return '0';const a=Math.abs(v);if(a>=1e4||a<1e-2)return sci(v);return String(+v.toPrecision(3));}
+function sci(v){if(!isFinite(v))return '∞';if(v>=1e12)return '> 10¹²';const e=Math.floor(Math.log10(Math.abs(v)));const m=v/Math.pow(10,e);return (Math.abs(m-1)<0.005?'':m.toFixed(2)+'×')+'10'+sup(e);}
+function sup(n){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(n).split('').map(c=>m[c]).join('');}
+const DLAB=DELTAS.map((d,i)=>'ε/10'+(i?sup(i+1):''));
+// ring shown in the phase plane: a larger choice than the charts' sizes, still strictly inside the tube
+const SHOW=[0.5,0.2,1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7,1e-8];
+const SLAB=['ε/2','ε/5'].concat(DLAB);
+function fracLabel(){return (+S.frac.toFixed(3))+' ε = '+fmt(S.eps*S.frac);}
+
+/* ---------- theme ---------- */
+const C={};
+function readTokens(){const cs=getComputedStyle(document.documentElement);['plot','grid','axis','ink','muted','faint','line','pert','nominal','eps','good','bad','accent','panel','d1','d2','d3','d4','d5','d6','d7','d8'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim()||'#888');}
+const DCOL=()=>['d1','d2','d3','d4','d5','d6','d7','d8'].map(k=>C[k]);
+function alpha(hex,a){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+
+/* ---------- canvases ---------- */
+const cvs={plane:$('cPlane'),dist:$('cDist'),exit:$('cExit')};const ctx={};const dims={};
+for(const k in cvs)ctx[k]=cvs[k].getContext('2d');
+function fit(k){const c=cvs[k],r=c.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);const w=Math.max(10,r.width),h=Math.max(10,r.height);c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);ctx[k].setTransform(dpr,0,0,dpr,0,0);dims[k]={w,h};}
+const FONT=()=>getComputedStyle(document.body).getPropertyValue('--f-mono');
+function niceStep(range,target){const raw=range/target,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return (f<1.5?1:f<3?2:f<7?5:10)*p;}
+function tick(v,step){const d=Math.max(0,-Math.floor(Math.log10(step)+1e-9));return (Math.abs(v)<step*1e-6?0:v).toFixed(d).replace('-','−');}
+
+/* phase plane */
+function view(){return S.view||S.p.view;}
+function PX(x){const v=view(),{w,h}=dims.plane,s=Math.min(w/(v[1]-v[0]),h/(v[3]-v[2]));return w/2+(x-(v[0]+v[1])/2)*s;}
+function PY(y){const v=view(),{w,h}=dims.plane,s=Math.min(w/(v[1]-v[0]),h/(v[3]-v[2]));return h/2-(y-(v[2]+v[3])/2)*s;}
+function iPX(px){const v=view(),{w,h}=dims.plane,s=Math.min(w/(v[1]-v[0]),h/(v[3]-v[2]));return (v[0]+v[1])/2+(px-w/2)/s;}
+function iPY(py){const v=view(),{w,h}=dims.plane,s=Math.min(w/(v[1]-v[0]),h/(v[3]-v[2]));return (v[2]+v[3])/2-(py-h/2)/s;}
+function scale(){const v=view(),{w,h}=dims.plane;return Math.min(w/(v[1]-v[0]),h/(v[3]-v[2]));}
+let fieldCache=null;
+function drawField(g){
+  const {w,h}=dims.plane;
+  if(!fieldCache||fieldCache.w!==w||fieldCache.h!==h||fieldCache.key!==sysKey()){
+    const off=document.createElement('canvas');const dpr=Math.min(2,window.devicePixelRatio||1);off.width=Math.round(w*dpr);off.height=Math.round(h*dpr);
+    const o=off.getContext('2d');o.setTransform(dpr,0,0,dpr,0,0);
+    o.fillStyle=C.plot;o.fillRect(0,0,w,h);
+    const v=view(),sx=niceStep(v[1]-v[0],8);
+    o.strokeStyle=C.grid;o.lineWidth=1;o.beginPath();
+    for(let x=Math.ceil(iPX(0)/sx)*sx;x<=iPX(w);x+=sx){const p=Math.round(PX(x))+.5;o.moveTo(p,0);o.lineTo(p,h);}
+    for(let y=Math.ceil(iPY(h)/sx)*sx;y<=iPY(0);y+=sx){const p=Math.round(PY(y))+.5;o.moveTo(0,p);o.lineTo(w,p);}
+    o.stroke();
+    o.strokeStyle=C.axis;o.beginPath();o.moveTo(Math.round(PX(0))+.5,0);o.lineTo(Math.round(PX(0))+.5,h);o.moveTo(0,Math.round(PY(0))+.5);o.lineTo(w,Math.round(PY(0))+.5);o.stroke();
+    o.fillStyle=C.faint;o.font='10.5px '+FONT();o.textAlign='center';o.textBaseline='top';
+    for(let x=Math.ceil(iPX(0)/sx)*sx;x<=iPX(w);x+=sx){if(Math.abs(x)<1e-9)continue;const p=PX(x);if(p<14||p>w-14)continue;o.fillText(tick(x,sx),p,Math.min(h-13,PY(0)+3));}
+    o.textAlign='left';o.textBaseline='middle';
+    for(let y=Math.ceil(iPY(h)/sx)*sx;y<=iPY(0);y+=sx){if(Math.abs(y)<1e-9)continue;const p=PY(y);if(p<10||p>h-10)continue;o.fillText(tick(y,sx),PX(0)+4,p);}
+    // vector field
+    const cell=Math.max(24,w/22),L=cell*0.36;
+    o.strokeStyle=alpha(C.faint,0.55);o.lineWidth=1;o.beginPath();
+    for(let px=cell/2;px<w;px+=cell)for(let py=cell/2;py<h;py+=cell){
+      const f=F(iPX(px),iPY(py));let dx=f[0],dy=-f[1];const n=Math.hypot(dx,dy);if(!(n>1e-12))continue;dx/=n;dy/=n;
+      const x1=px+dx*L,y1=py+dy*L;o.moveTo(px-dx*L,py-dy*L);o.lineTo(x1,y1);
+      o.moveTo(x1-dx*4-dy*2.5,y1-dy*4+dx*2.5);o.lineTo(x1,y1);o.lineTo(x1-dx*4+dy*2.5,y1-dy*4-dx*2.5);
+    }
+    o.stroke();
+    o.font='italic 15px '+getComputedStyle(document.body).getPropertyValue('--f-display');o.fillStyle=C.muted;
+    o.textAlign='right';o.textBaseline='bottom';o.fillText(S.p.id==='inverted'||S.p.id==='pendulum'?'θ':'x',w-8,PY(0)-4);
+    o.textAlign='left';o.textBaseline='top';o.fillText(S.p.id==='inverted'||S.p.id==='pendulum'?'ω':'y',PX(0)+8,6);
+    fieldCache={w,h,key:sysKey(),img:off};
+  }
+  g.drawImage(fieldCache.img,0,0,w,h);
+}
+function sysKey(){return S.p.id+(S.p.id==='linear'?[A.a,A.b,A.c,A.d].join(','):'')+'|'+view().join(',');}
+function idxAt(t){return Math.max(0,Math.min(S.tS.length-1,Math.round(t/(S.dt*S.stride))));}
+function pathTo(g,xs,ys,iEnd){
+  g.beginPath();let started=false,lx=0,ly=0;
+  for(let i=0;i<=iEnd;i++){
+    const x=xs[i],y=ys[i];if(!isFinite(x)){started=false;continue;}
+    const px=PX(x),py=PY(y);
+    if(Math.abs(px)>5e4||Math.abs(py)>5e4){started=false;continue;}
+    if(!started){g.moveTo(px,py);started=true;lx=px;ly=py;continue;}
+    if(Math.abs(px-lx)+Math.abs(py-ly)<0.8&&i<iEnd)continue;
+    g.lineTo(px,py);lx=px;ly=py;
+  }
+  g.stroke();
+}
+function drawPlane(){
+  const g=ctx.plane,{w,h}=dims.plane;g.clearRect(0,0,w,h);drawField(g);
+  if(!S.nom)return;
+  const iN=S.tS.length-1,it=idxAt(S.t);
+  g.lineCap='round';g.lineJoin='round';
+  // the eps-tube: every point within eps of the nominal path (full horizon faint, travelled part stronger)
+  const tw=2*S.eps*scale();
+  g.lineWidth=tw;g.strokeStyle=alpha(C.eps,0.08);pathTo(g,S.nom.x,S.nom.y,iN);
+  g.strokeStyle=alpha(C.eps,0.2);pathTo(g,S.nom.x,S.nom.y,it);
+  // full paths faint, travelled paths solid
+  g.lineWidth=1;g.strokeStyle=alpha(C.pert,0.3);
+  for(let k=0;k<NRING;k+=2)pathTo(g,S.ring.x[k],S.ring.y[k],iN);
+  g.strokeStyle=alpha(C.nominal,0.25);g.lineWidth=1.5;pathTo(g,S.nom.x,S.nom.y,iN);
+  g.strokeStyle=C.nominal;g.lineWidth=2;pathTo(g,S.nom.x,S.nom.y,it);
+  // perturbed on top, so they stay visible even when they hug the nominal trajectory
+  g.strokeStyle=C.pert;g.lineWidth=1.5;
+  for(let k=0;k<NRING;k+=2)pathTo(g,S.ring.x[k],S.ring.y[k],it);
+  // eps tube at x̄(t)
+  const cx=PX(S.nom.x[it]),cy=PY(S.nom.y[it]),sc=scale();
+  g.fillStyle=alpha(C.eps,0.16);g.strokeStyle=C.eps;g.lineWidth=2.4;g.beginPath();g.arc(cx,cy,S.eps*sc,0,7);g.fill();g.stroke();
+  g.font='italic 600 15px '+getComputedStyle(document.body).getPropertyValue('--f-display');g.fillStyle=C.eps;g.textAlign='left';g.textBaseline='middle';
+  g.fillText('ε',cx+S.eps*sc*0.71+5,cy-S.eps*sc*0.71-5);
+  // nominal start + current
+  g.fillStyle=C.plot;g.strokeStyle=C.nominal;g.lineWidth=2;g.beginPath();g.arc(PX(S.x0[0]),PY(S.x0[1]),5,0,7);g.fill();g.stroke();
+  g.fillStyle=C.nominal;g.beginPath();g.arc(cx,cy,4.5,0,7);g.fill();g.strokeStyle=C.plot;g.lineWidth=1.5;g.stroke();
+  g.font='italic 15px '+getComputedStyle(document.body).getPropertyValue('--f-display');g.fillStyle=C.ink;g.textAlign='left';g.textBaseline='bottom';
+  g.fillText('x̄₀',PX(S.x0[0])+7,PY(S.x0[1])-5);
+  let dm=0;for(let k=0;k<NRING;k++){const x=S.ring.x[k][it],y=S.ring.y[k][it];if(isFinite(x)){const dd=Math.hypot(x-S.nom.x[it],y-S.nom.y[it]);if(dd>dm)dm=dd;}}
+  $('tbadge').textContent='t = '+S.t.toFixed(2)+'   distance = '+fmt(dm)+'   (δ = '+fmt(S.eps*S.frac)+', ε = '+fmt(S.eps)+')';
+}
+
+/* distance chart */
+let distGeom=null;
+function drawDist(){
+  const g=ctx.dist,{w,h}=dims.dist;g.clearRect(0,0,w,h);if(!S.dist)return;
+  const L=50,R=12,Tm=10,B=26,pw=w-L-R,ph=h-Tm-B;
+  let lo=Math.log10(DELTAS[DELTAS.length-1])-1,hi=Math.log10(S.eps)+1;
+  for(const d of S.dist)for(let i=0;i<d.length;i+=4){const v=d[i];if(v>0&&v<BIG){const l=Math.log10(v);if(l<lo)lo=l;if(l>hi)hi=l;}}
+  lo=Math.max(-14,Math.floor(lo));hi=Math.min(12,Math.ceil(hi+0.2));
+  const X=t=>L+t/S.T*pw,Y=v=>Tm+ph-(Math.log10(Math.max(v,1e-300))-lo)/(hi-lo)*ph;
+  distGeom={L,R,Tm,B,pw,ph,lo,hi,X,Y};
+  // grid
+  const dec=Math.max(1,Math.ceil((hi-lo)/8));
+  g.font='10.5px '+FONT();g.fillStyle=C.faint;g.strokeStyle=C.grid;g.lineWidth=1;g.textAlign='right';g.textBaseline='middle';
+  g.beginPath();for(let e=Math.ceil(lo/dec)*dec;e<=hi;e+=dec){const y=Math.round(Y(Math.pow(10,e)))+.5;g.moveTo(L,y);g.lineTo(w-R,y);g.fillText('10'+sup(e),L-6,y);}g.stroke();
+  const st=niceStep(S.T,6);g.textAlign='center';g.textBaseline='top';
+  for(let t=0;t<=S.T+1e-9;t+=st){g.fillText(tick(t,st),X(t),h-B+6);}
+  g.textAlign='right';g.fillText('t',w-R,h-B+6);
+  g.strokeStyle=C.axis;g.beginPath();g.moveTo(L,Tm+ph+.5);g.lineTo(w-R,Tm+ph+.5);g.stroke();
+  // eps line
+  const ye=Y(S.eps);g.setLineDash([6,4]);g.strokeStyle=C.eps;g.lineWidth=1.5;g.beginPath();g.moveTo(L,ye);g.lineTo(w-R,ye);g.stroke();g.setLineDash([]);
+  g.fillStyle=C.eps;g.textAlign='left';g.textBaseline='bottom';g.font='600 11px '+getComputedStyle(document.body).getPropertyValue('--f-body');g.fillText('ε = '+fmt(S.eps),L+4,ye-3);
+  // series
+  const cols=DCOL();g.lineJoin='round';
+  S.dist.forEach((d,di)=>{
+    g.strokeStyle=cols[di];g.lineWidth=di===S.dIdx?2.6:1.6;g.beginPath();let st=false;
+    for(let i=0;i<d.length;i++){const v=d[i];if(!(v>0)||v>=BIG){st=false;continue;}const x=X(S.tS[i]),y=Math.max(Tm-2,Y(v));st?g.lineTo(x,y):g.moveTo(x,y);st=true;}
+    g.stroke();
+  });
+  // chosen delta (orange, on top)
+  if(S.rdist){g.strokeStyle=C.pert;g.lineWidth=2.6;g.beginPath();let s2=false,ex=null;
+    for(let i=0;i<S.rdist.length;i++){const v=S.rdist[i];if(ex===null&&v>=S.eps)ex=S.tS[i];if(!(v>0)||v>=BIG){s2=false;continue;}const x=X(S.tS[i]),y=Math.max(Tm-2,Y(v));s2?g.lineTo(x,y):g.moveTo(x,y);s2=true;}
+    g.stroke();if(ex!==null){g.fillStyle=C.pert;g.strokeStyle=C.plot;g.lineWidth=2;g.beginPath();g.arc(X(ex),ye,5.5,0,7);g.fill();g.stroke();}}
+  // exit markers
+  S.exitT.forEach((te,di)=>{if(te===null)return;const x=X(te),y=ye;g.fillStyle=cols[di];g.strokeStyle=C.plot;g.lineWidth=2;g.beginPath();g.arc(x,y,4.5,0,7);g.fill();g.stroke();});
+  // time cursor
+  const xc=X(S.t);g.strokeStyle=alpha(C.ink,0.35);g.lineWidth=1;g.beginPath();g.moveTo(xc,Tm);g.lineTo(xc,Tm+ph);g.stroke();
+  // y label
+  g.save();g.translate(12,Tm+ph/2);g.rotate(-Math.PI/2);g.textAlign='center';g.textBaseline='middle';g.fillStyle=C.muted;g.font='11px '+getComputedStyle(document.body).getPropertyValue('--f-body');g.fillText('distance',0,0);g.restore();
+}
+/* exit-time chart */
+function drawExit(){
+  const g=ctx.exit,{w,h}=dims.exit;g.clearRect(0,0,w,h);if(!S.exitT)return;
+  const L=46,R=14,Tm=14,B=30,pw=w-L-R,ph=h-Tm-B;
+  const X=e=>L+(e-1)/(8-1)*pw, Y=t=>Tm+ph-t/S.T*ph;
+  g.font='10.5px '+FONT();g.fillStyle=C.faint;g.strokeStyle=C.grid;g.lineWidth=1;
+  const st=niceStep(S.T,4);g.textAlign='right';g.textBaseline='middle';g.beginPath();
+  for(let t=0;t<=S.T+1e-9;t+=st){const y=Math.round(Y(t))+.5;g.moveTo(L,y);g.lineTo(w-R,y);g.fillText(tick(t,st),L-6,y);}g.stroke();
+  g.textAlign='center';g.textBaseline='top';
+  for(let e=1;e<=8;e++)g.fillText(DLAB[e-1],X(e),h-B+6);
+  g.fillStyle=C.muted;g.font='11px '+getComputedStyle(document.body).getPropertyValue('--f-body');g.fillText('δ (smaller →)',L+pw/2,h-13);
+  // horizon band label
+  g.strokeStyle=C.axis;g.setLineDash([3,3]);g.beginPath();g.moveTo(L,Y(S.T)+.5);g.lineTo(w-R,Y(S.T)+.5);g.stroke();g.setLineDash([]);
+  g.textAlign='right';g.textBaseline='bottom';g.fillStyle=C.faint;g.font='10.5px '+FONT();g.fillText('T',w-R,Y(S.T)-2);
+  // theory line for exponential
+  const v=S.verdict;
+  if(v&&v.kind==='exp'&&v.lam>0){
+    g.strokeStyle=alpha(C.ink,0.4);g.setLineDash([4,4]);g.lineWidth=1.2;g.beginPath();let s=false;
+    for(let e=1;e<=8;e+=0.05){const t=Math.log(S.eps/Math.pow(10,-e))/v.lam;if(t<0||t>S.T*1.02){s=false;continue;}s?g.lineTo(X(e),Y(t)):g.moveTo(X(e),Y(t));s=true;}
+    g.stroke();g.setLineDash([]);
+  }
+  const cols=DCOL();
+  for(let i=0;i<8;i++){
+    const te=S.exitT[i],x=X(i+1);
+    if(te!==null){g.fillStyle=cols[i];g.strokeStyle=C.plot;g.lineWidth=2;g.beginPath();g.arc(x,Y(te),5.5,0,7);g.fill();g.stroke();}
+    else{g.strokeStyle=cols[i];g.lineWidth=1.8;g.beginPath();g.arc(x,Y(S.T)-10,5,0,7);g.stroke();
+      g.beginPath();g.moveTo(x,Y(S.T)-17);g.lineTo(x,Y(S.T)-26);g.moveTo(x-3.5,Y(S.T)-22.5);g.lineTo(x,Y(S.T)-26.5);g.lineTo(x+3.5,Y(S.T)-22.5);g.stroke();}
+  }
+  const n=S.exitT.filter(t=>t!==null).length;
+  let msg=`${n} of 8 perturbation sizes leave the ε-tube before T = ${S.T}. Filled: exit time. Open circle with arrow: still inside at T.`;
+  if(v&&v.kind==='exp')msg+=` Dashed: t = ln(ε/δ)/λ with λ ≈ ${v.lam.toFixed(3)}. Exit time grows only like ln(1/δ), so it is finite for every δ.`;
+  $('exitNote').textContent=msg;
+}
+
+/* ---------- UI ---------- */
+function updateTexts(){
+  const v=S.verdict;$('vchip').textContent=v.chip;$('vchip').className='chip '+v.cls;$('vtext').textContent=v.text;
+  const cols=DCOL();
+  $('tbody').innerHTML=S.rows.map((r,i)=>`<tr><td><span class="sq" style="background:${cols[i]}"></span>${DLAB[i]}</td><td>${fmt(r.max)}</td><td>${fmt(r.ratio)}</td><td>${fmt(r.end)}</td><td class="${r.exit===null?'in':'out'}">${r.exit===null?'stays inside':r.exit.toFixed(2)}</td></tr>`).join('');
+  $('dLegend').innerHTML=DLAB.map((l,i)=>`<span style="color:${cols[i]}"><i class="sw" style="${i===S.dIdx?'border-top-width:3px':''}"></i><span style="color:var(--muted)">δ = ${l}</span></span>`).join('')+`<span style="color:var(--pert)"><i class="sw" style="border-top-width:3px"></i><span style="color:var(--muted)">your δ = ${fmt(S.eps*S.frac)}</span></span>`+`<span style="color:var(--eps)"><i class="sw dash"></i><span style="color:var(--muted)">ε</span></span>`;
+  // Jacobian at x0
+  const h=1e-6,x=S.x0[0],y=S.x0[1];const fxp=F(x+h,y),fxm=F(x-h,y),fyp=F(x,y+h),fym=F(x,y-h);
+  const j11=(fxp[0]-fxm[0])/(2*h),j21=(fxp[1]-fxm[1])/(2*h),j12=(fyp[0]-fym[0])/(2*h),j22=(fyp[1]-fym[1])/(2*h);
+  const tr=j11+j22,det=j11*j22-j12*j21,disc=tr*tr-4*det;
+  const lam=disc>=0?`${r3((tr+Math.sqrt(disc))/2)}, ${r3((tr-Math.sqrt(disc))/2)}`:`${r3(tr/2)} ± ${r3(Math.sqrt(-disc)/2)}i`;
+  const f0=F(x,y),isEq=Math.hypot(f0[0],f0[1])<1e-6;
+  $('jac').innerHTML=`J = [[${r3(j11)}, ${r3(j12)}], [${r3(j21)}, ${r3(j22)}]]<br>eigenvalues λ = ${lam}<br>`+(isEq?'x̄₀ is an equilibrium, so the eigenvalues decide local stability when no real part is 0 (Lyapunov’s indirect method).':'x̄₀ is not an equilibrium, so J at x̄₀ alone does not decide stability; the growth along the whole trajectory does.');
+}
+function r3(v){return (Math.abs(v)<5e-4?0:+v.toFixed(3)).toString().replace('-','−');}
+function populate(){
+  const sel=$('preset');sel.innerHTML=PRESETS.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('');
+}
+function loadPreset(i){
+  S.p=PRESETS[i];S.x0=S.p.x0.slice();S.view=S.p.view.slice();S.T=S.p.T;$('sT').value=S.T;$('oT').textContent=S.T;
+  $('matBox').hidden=S.p.id!=='linear';
+  $('sysEq').textContent=(S.p.id==='linear'?'x′ = a₁₁x + a₁₂y,  y′ = a₂₁x + a₂₂y. ':S.p.eq+'. ')+S.p.note;
+  fieldCache=null;S.t=0;recompute();
+}
+function recompute(){setDeltas();simulate();updateTexts();drawAll();}
+function drawAll(){drawPlane();drawDist();drawExit();syncTime();}
+function syncTime(){$('sTime').value=Math.round(S.t/S.T*1000);}
+$('preset').addEventListener('change',e=>loadPreset(+e.target.value));
+[['m11','a','o11'],['m12','b','o12'],['m21','c','o21'],['m22','d','o22']].forEach(([id,k,o])=>{
+  $(id).value=A[k];$(o).textContent=A[k];
+  $(id).addEventListener('input',e=>{A[k]=+e.target.value;$(o).textContent=A[k];fieldCache=null;recompute();});
+});
+$('sEps').addEventListener('input',e=>{S.eps=Math.pow(10,+e.target.value);$('oEps').textContent=fmt(S.eps);recompute();});
+$('sDel').addEventListener('input',e=>{S.frac=+e.target.value;$('oDel').textContent=fracLabel();recompute();});
+$('sT').addEventListener('input',e=>{S.T=+e.target.value;$('oT').textContent=S.T;S.t=Math.min(S.t,S.T);recompute();});
+$('sSp').addEventListener('input',e=>{S.speed=+e.target.value;$('oSp').textContent=S.speed.toFixed(1)+'×';});
+$('bPlay').addEventListener('click',()=>{S.playing=!S.playing;$('bPlay').textContent=S.playing?'Pause':'Play';});
+$('bReset').addEventListener('click',()=>{S.x0=S.p.x0.slice();S.t=0;recompute();});
+$('sTime').addEventListener('input',e=>{S.t=+e.target.value/1000*S.T;S.playing=false;$('bPlay').textContent='Play';drawPlane();drawDist();});
+const plot=$('plot');
+// navigation: drag to pan, wheel / buttons / keys to zoom; a click without movement places x0
+plot.tabIndex=0;plot.setAttribute('aria-label','Phase plane. Arrow keys move the view, plus and minus zoom.');
+let drag=null;
+function loc(e){const r=plot.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
+function redrawView(){fieldCache=null;drawPlane();}
+function panBy(dxPix,dyPix){const s=scale(),v=view();S.view=[v[0]-dxPix/s,v[1]-dxPix/s,v[2]+dyPix/s,v[3]+dyPix/s];redrawView();}
+function zoomAt(px,py,f){const x=iPX(px),y=iPY(py),v=view();S.view=[x-(x-v[0])*f,x+(v[1]-x)*f,y-(y-v[2])*f,y+(v[3]-y)*f];redrawView();}
+plot.addEventListener('pointerdown',e=>{if(e.target.closest('.zoom'))return;const [px,py]=loc(e);drag={px,py,lx:px,ly:py,moved:false};plot.setPointerCapture(e.pointerId);});
+plot.addEventListener('pointermove',e=>{if(!drag)return;const [px,py]=loc(e);if(!drag.moved&&Math.hypot(px-drag.px,py-drag.py)>4){drag.moved=true;plot.classList.add('dragging');}if(drag.moved){panBy(px-drag.lx,py-drag.ly);drag.lx=px;drag.ly=py;}});
+plot.addEventListener('pointerup',e=>{if(!drag)return;const d=drag;drag=null;plot.classList.remove('dragging');if(!d.moved&&!e.target.closest('.zoom')){S.x0=[iPX(d.px),iPY(d.py)];S.t=0;recompute();}});
+plot.addEventListener('pointercancel',()=>{drag=null;plot.classList.remove('dragging');});
+plot.addEventListener('wheel',e=>{e.preventDefault();const [px,py]=loc(e);zoomAt(px,py,e.deltaY>0?1.15:1/1.15);},{passive:false});
+plot.addEventListener('keydown',e=>{const st=40;const k={ArrowLeft:[st,0],ArrowRight:[-st,0],ArrowUp:[0,st],ArrowDown:[0,-st]}[e.key];if(k){e.preventDefault();panBy(k[0],k[1]);}else if(e.key==='+'||e.key==='='){zoomAt(dims.plane.w/2,dims.plane.h/2,1/1.25);}else if(e.key==='-'){zoomAt(dims.plane.w/2,dims.plane.h/2,1.25);}else if(e.key==='0'){S.view=S.p.view.slice();redrawView();}});
+$('zin').addEventListener('click',()=>zoomAt(dims.plane.w/2,dims.plane.h/2,1/1.25));
+$('zout').addEventListener('click',()=>zoomAt(dims.plane.w/2,dims.plane.h/2,1.25));
+$('zreset').addEventListener('click',()=>{S.view=S.p.view.slice();redrawView();});
+plot.addEventListener('pointermove',e=>{const r=plot.getBoundingClientRect();const x=iPX(e.clientX-r.left),y=iPY(e.clientY-r.top);$('readout').textContent=`x = ${x.toFixed(2)}, y = ${y.toFixed(2)}`;});
+// tooltip on distance chart
+const tip=document.createElement('div');tip.className='tip';tip.hidden=true;$('cvDist').appendChild(tip);
+$('cvDist').addEventListener('pointermove',e=>{
+  if(!distGeom)return;const r=$('cvDist').getBoundingClientRect(),px=e.clientX-r.left;const {L,pw}=distGeom;
+  if(px<L||px>L+pw){tip.hidden=true;return;}
+  const t=(px-L)/pw*S.T,i=idxAt(t);
+  tip.innerHTML=`t = ${S.tS[i].toFixed(2)}<br>`+S.dist.map((d,k)=>`δ ${DLAB[k]}: ${fmt(d[i])}`).join('<br>');
+  tip.hidden=false;const tx=px+14>r.width-150?px-160:px+14;tip.style.left=tx+'px';tip.style.top='8px';
+});
+$('cvDist').addEventListener('pointerleave',()=>{tip.hidden=true;});
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(S.playing&&S.tS){S.t+=dt*S.speed*Math.max(1,S.T/20);if(S.t>S.T)S.t=0;drawPlane();drawDist();syncTime();}
+  requestAnimationFrame(loop);
+}
+function resize(){['plane','dist','exit'].forEach(fit);fieldCache=null;if(S.tS)drawAll();}
+new ResizeObserver(resize).observe(plot);
+new ResizeObserver(()=>{fit('dist');fit('exit');if(S.tS){drawDist();drawExit();}}).observe($('cvDist'));
+new ResizeObserver(()=>{fit('exit');if(S.tS)drawExit();}).observe($('cvExit'));
+function theme(){readTokens();fieldCache=null;if(S.tS){updateTexts();drawAll();}}
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',theme);}catch(e){}
+new MutationObserver(theme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{fieldCache=null;if(S.tS)drawAll();});
+
+readTokens();populate();['plane','dist','exit'].forEach(fit);
+$('oEps').textContent=fmt(S.eps);$('oDel').textContent=fracLabel();$('oSp').textContent='1.0×';
+try{if(matchMedia('(prefers-reduced-motion: reduce)').matches){S.playing=false;$('bPlay').textContent='Play';}}catch(e){}
+$('preset').value='4';loadPreset(4);
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>
