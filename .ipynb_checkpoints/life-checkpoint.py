@@ -4,7 +4,7 @@ import random
 # Grid size
 ROWS = 50
 COLS = 50
-CELL_SIZE =15 
+CELL_SIZE = 20
 DELAY = 100  # milliseconds
 
 class GameOfLife:
